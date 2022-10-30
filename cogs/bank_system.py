@@ -16,7 +16,7 @@ class bankSystem(commands.Cog):  # Baseclass quasi Gerüst
                 """
                 CREATE TABLE IF NOT EXISTS users (
                 user_id INTEGER PRIMARY KEY,
-                wallet INTEGER DEFAULT 0
+                wallet INTEGER
                 )"""
             )
 
@@ -32,8 +32,12 @@ class bankSystem(commands.Cog):  # Baseclass quasi Gerüst
             await db.execute(
                 "UPDATE users SET wallet = wallet + ? WHERE user_id = ?", (betrag, member.id)
             )
+
+            embed = discord.Embed(title="Transaktion",
+                                  description=f"{ctx.author.mention} hat {member.mention}  ***{betrag}*** geschenkt was ein Ehrenmann :sparkles:",
+                                  color=discord.Color.dark_purple())
             await ctx.respond(
-                f"Von {member.mention} wurde {betrag} auf das Konto gezahlt"
+                embed=embed
             )
             await db.commit()
 
@@ -49,21 +53,31 @@ class bankSystem(commands.Cog):  # Baseclass quasi Gerüst
             await db.execute(
                 "UPDATE users SET wallet = wallet - ? WHERE user_id = ?", (betrag, member.id)
             )
+
+            embed = discord.Embed(title="Transaktion",
+                                  description=f"{ctx.author.mention} hat {member.mention} eiskalt ***{betrag}*** :coin: geklaut",
+                                  color=discord.Color.dark_purple())
+
             await ctx.respond(
-                f"Von {member.mention} wurde {betrag} von dem Konto abgezogen"
+                embed=embed
             )
+
             await db.commit()
 
     @slash_command(description="Zeige dein Kontostand an")
     async def balance(self, ctx):
         async with aiosqlite.connect("bank.db") as db:
-            async with db.execute("SELECT wallet FROM users WHERE user_id = ?", (ctx.author.id,)) as cursor:
+            async with db.execute("""SELECT wallet FROM users WHERE user_id = ?""", (ctx.author.id,)) as cursor:
                 betrag = await cursor.fetchone()
-                if betrag == 0:
-                    await ctx.respond("Tja dein Konto sieht ganz schön leer aus")
+                if betrag is None:
+                    await ctx.respond("Anscheinend hast du noch kein Konto :octagonal_sign: ")
                     return
 
-                await ctx.respond(betrag)
+                embed = discord.Embed(title="Dein Kontostand",
+                                      description=f"Deine aktuelle Beute liegt bei ***{betrag[0]}*** :coin:",
+                                      color=discord.Color.dark_purple())
+
+                await ctx.respond(embed=embed)
 
 
 def setup(bot):

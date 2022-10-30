@@ -8,7 +8,7 @@ class Admin(commands.Cog):  # Baseclass quasi Gerüst
         self.bot = bot
 
     @slash_command(description="Kicke einen User")
-    @commands.has_permissions(kick_members=True)
+    @commands.has_any_role("Admin", "Spieler", "Spielleiter")
     async def kick(self,
                    ctx,
                    member: Option(discord.Member, "Wähle einen User"),
