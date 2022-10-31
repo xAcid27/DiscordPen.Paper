@@ -13,7 +13,7 @@ activity = discord.Activity(prefix="!" , type=discord.ActivityType.playing, name
 
 bot = discord.Bot(
     intents=intents ,
-    debug_guilds=[1031612384940396635] ,
+    debug_guilds=[1031612384940396635],
     activity=activity
 )
 

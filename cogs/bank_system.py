@@ -4,6 +4,7 @@ from discord.commands import slash_command, Option
 
 import aiosqlite
 
+coin = "<a:BerryCoin:1036423419543166986>" # :BerryCoin: Emoji Inetegration
 
 class bankSystem(commands.Cog):  # Baseclass quasi Gerüst
     def __init__(self, bot):
@@ -16,7 +17,7 @@ class bankSystem(commands.Cog):  # Baseclass quasi Gerüst
                 """
                 CREATE TABLE IF NOT EXISTS users (
                 user_id INTEGER PRIMARY KEY,
-                wallet INTEGER
+                wallet INTEGER DEFAULT 0
                 )"""
             )
 
@@ -24,8 +25,52 @@ class bankSystem(commands.Cog):  # Baseclass quasi Gerüst
     async def geben(self,
                    ctx,
                    member: Option(discord.Member, "Wähle einen User"),
-                   betrag: Option(str, "Wie viel soll es sein?")):
+                   betrag: Option(int, "Wie viel soll es sein?")):
         async with aiosqlite.connect("bank.db") as db:
+            if betrag < 0:  # Abfrage ob der abgezogene Betrag als 0 zum klauen
+
+                embed = discord.Embed(title="Transaktion",
+                                      description=f"{member.mention} du kannst keine ***{betrag}*** {coin} geben",
+                                      color=discord.Color.dark_purple())
+                await ctx.respond(
+                    embed=embed
+                )
+                return
+
+            await db.execute(
+                "INSERT OR IGNORE INTO users (user_id) VALUES (?)", (member.id,)
+            )
+            await db.execute(
+                "UPDATE users SET wallet = wallet + ? WHERE user_id = ?", (betrag, member.id)
+            )
+            await db.execute(
+                "UPDATE users SET wallet = wallet - ? WHERE user_id = ?", (betrag, ctx.author.id)
+            )
+
+            embed = discord.Embed(title="Transaktion",
+                                  description=f"{ctx.author.mention} hat {member.mention}  ***{betrag}*** {coin} "
+                                              f"geschenkt, was ein Ehrenmann :sparkles:",
+                                  color=discord.Color.dark_purple())
+            await ctx.respond(
+                embed=embed
+            )
+            await db.commit()
+
+    @slash_command(description="Füge Betrag X zum Konto hinzu")
+    async def add(self,
+                   ctx,
+                   member: Option(discord.Member, "Wähle einen User"),
+                   betrag: Option(int, "Wie viel soll es sein?")):
+        async with aiosqlite.connect("bank.db") as db:
+            if betrag < 0:  # Abfrage ob der abgezogene Betrag als 0 zum klauen
+
+                embed = discord.Embed(title="Transaktion",
+                                      description=f"Du kannst {member.mention} keine ***{betrag}*** {coin} geben ",
+                                      color=discord.Color.dark_purple())
+                await ctx.respond(
+                    embed=embed
+                )
+                return
             await db.execute(
                 "INSERT OR IGNORE INTO users (user_id) VALUES (?)", (member.id,)
             )
@@ -34,34 +79,55 @@ class bankSystem(commands.Cog):  # Baseclass quasi Gerüst
             )
 
             embed = discord.Embed(title="Transaktion",
-                                  description=f"{ctx.author.mention} hat {member.mention}  ***{betrag}*** geschenkt was ein Ehrenmann :sparkles:",
+                                  description=f"***Der Spielleiter*** hat {member.mention}  ***{betrag}*** :coin: "
+                                              f"geschenkt, was ein Ehrenmann :sparkles:",
                                   color=discord.Color.dark_purple())
             await ctx.respond(
                 embed=embed
             )
             await db.commit()
 
+
     @slash_command(description="Nehme Betrag X vom Konto")
-    async def nehmen(self,
+    async def lose(self,
                      ctx,
                      member: Option(discord.Member, "Wähle einen User"),
-                     betrag: Option(str, "Wie viel soll es sein?")):
+                     betrag: Option(int, "Wie viel soll es sein?")):
         async with aiosqlite.connect("bank.db") as db:
+            async with db.execute("""SELECT wallet FROM users WHERE user_id = ?""", (member.id,)) as cursor:
+                guthaben = await cursor.fetchone()
+                if guthaben[0] < betrag:  # Abfrage ob der abgezogene Betrag größer als guthaben ist
+
+                    embed = discord.Embed(title="Transaktion",
+                                          description=f"{member.mention} hat keine ***{betrag}*** :coin: auf dem Konto",
+                                          color=discord.Color.dark_purple())
+                    await ctx.respond(
+                        embed=embed
+                    )
+                    return
+
+                if betrag < 0: # Kein Minusgeld schenken
+
+                    embed = discord.Embed(title="Transaktion",
+                                          description=f"Du kannst von {member.mention} keine ***{betrag}*** :coin: vom dem Konto abziehen",
+                                          color=discord.Color.dark_purple())
+                    await ctx.respond(
+                        embed=embed
+                    )
+                    return
+
             await db.execute(
                 "INSERT OR IGNORE INTO users (user_id) VALUES (?)", (member.id,)
             )
             await db.execute(
                 "UPDATE users SET wallet = wallet - ? WHERE user_id = ?", (betrag, member.id)
             )
-
             embed = discord.Embed(title="Transaktion",
-                                  description=f"{ctx.author.mention} hat {member.mention} eiskalt ***{betrag}*** :coin: geklaut",
+                                  description=f"***Der Spielleiter*** sagt {member.mention} hat ***{betrag}*** :coin: verloren",
                                   color=discord.Color.dark_purple())
-
             await ctx.respond(
                 embed=embed
             )
-
             await db.commit()
 
     @slash_command(description="Zeige dein Kontostand an")
@@ -74,7 +140,7 @@ class bankSystem(commands.Cog):  # Baseclass quasi Gerüst
                     return
 
                 embed = discord.Embed(title="Dein Kontostand",
-                                      description=f"Deine aktuelle Beute liegt bei ***{betrag[0]}*** :coin:",
+                                      description=f"Deine aktuelle Beute liegt bei ***{betrag[0]}*** {coin}",
                                       color=discord.Color.dark_purple())
 
                 await ctx.respond(embed=embed)
