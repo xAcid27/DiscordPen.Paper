@@ -84,6 +84,7 @@ class bankSystem(commands.Cog):  # Baseclass quasi Gerüst
             await db.commit()
 
     @slash_command(description="Füge Betrag X zum Konto hinzu")
+    @commands.has_any_role(1035698515512401920, 1035691541198545026)
     async def add(self,
                    ctx,
                    member: Option(discord.Member, "Wähle einen User"),
@@ -118,13 +119,17 @@ class bankSystem(commands.Cog):  # Baseclass quasi Gerüst
             await db.execute(
                 "INSERT OR IGNORE INTO users (user_id) VALUES (?)", (member.id,)
             )
+
+            await db.execute(
+                "INSERT OR IGNORE INTO users (user_id) VALUES (?)", (member.id,)
+            )
             await db.execute(
                 "UPDATE users SET wallet = wallet + ? WHERE user_id = ?", (betrag, member.id)
             )
-
-
+            await db.commit()
 
     @slash_command(description="Nehme Betrag X vom Konto")
+    @commands.has_any_role(1035698515512401920, 1035691541198545026)
     async def lose(self,
                      ctx,
                      member: Option(discord.Member, "Wähle einen User"),
@@ -178,6 +183,10 @@ class bankSystem(commands.Cog):  # Baseclass quasi Gerüst
             await db.execute(
                 "INSERT OR IGNORE INTO users (user_id) VALUES (?)", (member.id,)
             )
+
+            await db.execute(
+                "INSERT OR IGNORE INTO users (user_id) VALUES (?)", (member.id,)
+            )
             await db.execute(
                 "UPDATE users SET wallet = wallet - ? WHERE user_id = ?", (betrag, member.id)
             )
@@ -207,5 +216,6 @@ class bankSystem(commands.Cog):  # Baseclass quasi Gerüst
                     await ctx.respond(
                         embed=embed
                     )
+
 def setup(bot):
     bot.add_cog(bankSystem(bot))
