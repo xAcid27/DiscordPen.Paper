@@ -119,10 +119,6 @@ class bankSystem(commands.Cog):  # Baseclass quasi Gerüst
             await db.execute(
                 "INSERT OR IGNORE INTO users (user_id) VALUES (?)", (member.id,)
             )
-
-            await db.execute(
-                "INSERT OR IGNORE INTO users (user_id) VALUES (?)", (member.id,)
-            )
             await db.execute(
                 "UPDATE users SET wallet = wallet + ? WHERE user_id = ?", (betrag, member.id)
             )
