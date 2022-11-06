@@ -61,15 +61,15 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
     @slash_command(description="Zeige dein Waffen an!")
     async def waffen_inventar(self, ctx):
         async with aiosqlite.connect("waffen.db") as db:
-            async with db.execute("""SELECT name, power, magie FROM waffen WHERE owner_id = ?""",
-                                  (ctx.author.id,)) as cursor:
-                all = await cursor.fetchall
+            async with db.execute("""SELECT name, power, magie FROM waffen WHERE owner_id = ?""", (ctx.author.id,)) as cursor:
+
+                i=0
+                slot=1
+                all = await cursor.fetchall()
                 rows = len(all)
 
-                for rows in all:
-                     ctx.respond("Item: ", all[0])
-                     ctx.respond("Power: ", all[1])
-                     ctx.respond("Magie: ", all[2])
+                print(*all(4) , sep=' - ')  # 1 - 2 - 3
+
 
     # @slash_command(description="How Much?")
     # async def howmuch(self, ctx, member: Option(discord.Member, "Member")):
