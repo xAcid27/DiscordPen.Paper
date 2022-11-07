@@ -11,20 +11,33 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
     def __init__(self, bot):
         self.bot = bot
 
+    #
+    # @commands.Cog.listener()
+    # async def on_ready(self):
+    #     async with aiosqlite.connect("waffen.db") as db:
+    #         await db.execute(
+    #             """
+    #             CREATE TABLE IF NOT EXISTS waffen (
+    #             owner_id INTEGER,
+    #             name TEXT,
+    #             power INTEGER,
+    #             )"""
+    #         )
+
     @slash_command(description="Füge eine Waffe zum Spielerinventar hinzu")
     async def add_waffe(self,
                         ctx,
                         member: Option(discord.Member, "Welcher Spieler soll die waffe bekommen"),
                         name: Option(str, "Wie heißst die Waffe?"),
-                        power: Option(int, "Wie viel Stärke?"),
-                        magie: Option(int, "Wie viel Magie?")):
+                        power: Option(int, "Wie viel Stärke?")):
 
         async with aiosqlite.connect("waffen.db") as db:
             async with db.execute("""SELECT * FROM waffen WHERE owner_id = ?""", (member.id,)) as cursor:
-                all = await cursor.fetchall()
-                countinv = len(all)
+                bag = await cursor.fetchall()
+                await cursor.close()
+                countinv = len(bag)
 
-            if countinv > maxcap:#Check ob das Inventarcap erreicht ist
+            if countinv > maxcap:  # Check ob das Inventarcap erreicht ist
                 embed = discord.Embed(title="Loot :sparkles:",
                                       description=f"Der Spieler ***{member.mention}*** kann ***{name}*** leider nicht"
                                                   f" mehr in sein Tasche verstauen :weary:",
@@ -34,9 +47,9 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
                 )
                 return
 
-            if power | magie < 0:#Check ob Power oder Magie unter null
+            if power < 0:  # Check ob Power  unter null
                 embed = discord.Embed(title="Loot :sparkles:",
-                                      description=f"***Power*** und ***Magie*** dürfen nicht negativ sein"
+                                      description=f"***Power*** darf nicht negativ sein"
                                                   f"oder? :thinking: ",
                                       color=discord.Color.dark_purple())
                 await ctx.respond(
@@ -45,13 +58,13 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
                 return
 
             await db.execute(
-                "INSERT INTO waffen (owner_id, name, power, magie) VALUES (?, ?, ?, ?)", (member.id, name, power, magie,)
+                "INSERT INTO waffen (owner_id, name, power) VALUES (?, ?, ?)", (member.id, name, power)
             )
             await db.commit()
 
             embed = discord.Embed(title="Loot :sparkles:",
                                   description=f"Spieler {member.mention} hat ***{name}*** mit ***{power}***"
-                                              f" :crossed_swords: und mit ***{magie}*** :zap: erhalten",
+                                              f" :crossed_swords: erhalten",
                                   color=discord.Color.dark_purple())
 
             await ctx.respond(
@@ -61,19 +74,38 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
     @slash_command(description="Zeige dein Waffen an!")
     async def waffen_inventar(self, ctx):
         async with aiosqlite.connect("waffen.db") as db:
-            async with db.execute("""SELECT name, power, magie FROM waffen WHERE owner_id = ?""", (ctx.author.id,)) as cursor:
+            async with db.execute("""SELECT name, power FROM waffen WHERE owner_id = ?""", (ctx.author.id,)) as cursor:
+                bag = await cursor.fetchall()
+                await cursor.close()
 
-                i=0
-                slot=1
-                all = await cursor.fetchall()
-                rows = len(all)
+                embed = discord.Embed(title="Deine Waffen :crossed_swords:",
+                                      color=discord.Color.dark_purple())
+                i = 0  # Durchlauf des Arrays - Itemname
+                j = 0  # Durchlauf des Arrays - Itestat
+                slot = 1
+                rows = len(bag)
 
-                print(*all(4) , sep=' - ')  # 1 - 2 - 3
+                for rows in bag:
+                    itemname = bag[i]  # Durchlauf des Arrays - Itemname
+                    itemstat = bag[j]  # Durchlauf des Arrays - Itestat
+                    embed.add_field(name=f"Slot{slot}", value=f"Waffe: {itemname[0]} | Schaden + {itemstat[1]}",
+                                    inline=False)
+                    j += 1
+                    i += 1
+                    slot += 1
+
+                await ctx.respond(embed=embed)
 
 
-    # @slash_command(description="How Much?")
-    # async def howmuch(self, ctx, member: Option(discord.Member, "Member")):
+    # @slash_command (description="Gebe einem Mitspieler eine Waffe")
+    # async def waffen_geben(self, ctx,
+    #                        member: Option(discord.Member, "Welcher Spieler soll die waffe bekommen"),
+    #                        waffe: Option(str, "Wie heißst die Waffe?")):
     #     async with aiosqlite.connect("waffen.db") as db:
+    #         async with db.execute("""SELECT name FROM waffen WHERE owner_id AND  = ?""", (ctx.author.id,)) as cursor:
+    #             bag = await cursor.fetchall()
+    #             await cursor.close()
+
 
 
 def setup(bot):
