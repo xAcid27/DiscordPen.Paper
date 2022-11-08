@@ -85,10 +85,18 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
                 slot = 1
                 rows = len(bag)
 
+                if bag == []:
+                    embed.add_field(name="404 Waffe not Found", value="Anscheinend hast garkeine Waffen in deiner Tasche :cry:",
+                                    inline=False)
+                    await ctx.respond(
+                        embed=embed
+                    )
+                    return
+
                 for rows in bag:
                     itemname = bag[i]  # Durchlauf des Arrays - Itemname
                     itemstat = bag[j]  # Durchlauf des Arrays - Itestat
-                    embed.add_field(name=f"Slot{slot}", value=f"Waffe: {itemname[0]} | Schaden + {itemstat[1]}",
+                    embed.add_field(name=f"Slot {slot}", value=f"Waffe: {itemname[0]} | Schaden + {itemstat[1]}",
                                     inline=False)
                     j += 1
                     i += 1
@@ -97,14 +105,18 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
                 await ctx.respond(embed=embed)
 
 
-    # @slash_command (description="Gebe einem Mitspieler eine Waffe")
-    # async def waffen_geben(self, ctx,
-    #                        member: Option(discord.Member, "Welcher Spieler soll die waffe bekommen"),
-    #                        waffe: Option(str, "Wie heißst die Waffe?")):
-    #     async with aiosqlite.connect("waffen.db") as db:
-    #         async with db.execute("""SELECT name FROM waffen WHERE owner_id AND  = ?""", (ctx.author.id,)) as cursor:
-    #             bag = await cursor.fetchall()
-    #             await cursor.close()
+    @slash_command (description="Gebe einem Mitspieler eine Waffe")
+    async def waffen_geben(self, ctx,
+                           member: Option(discord.Member, "Welcher Spieler soll die waffe bekommen"),
+                           waffe: Option(str, "Wie heißst die Waffe?")):
+        async with aiosqlite.connect("waffen.db") as db:
+            await db.execute(
+                "UPDATE waffen SET owner_id = ? WHERE name = ?" , (member.id , waffe)
+            )
+            await db.commit()
+            await ctx.respond(
+                "Ja"
+            )
 
 
 
