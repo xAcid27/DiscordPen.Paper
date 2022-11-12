@@ -32,7 +32,7 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
                         name: Option(str, "Wie heißst die Waffe?"),
                         power: Option(int, "Wie viel Stärke?")):
 
-        async with aiosqlite.connect("waffen.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT * FROM waffen WHERE owner_id = ?""", (member.id,)) as cursor:
                 bag = await cursor.fetchall()
                 await cursor.close()
@@ -74,7 +74,7 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
 
     @slash_command(description="Zeige dein Waffen an!")
     async def waffen_inventar(self, ctx):
-        async with aiosqlite.connect("waffen.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT name, power FROM waffen WHERE owner_id = ?""", (ctx.author.id,)) as cursor:
                 bag = await cursor.fetchall()
                 await cursor.close()
@@ -104,13 +104,15 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
                     i += 1
                     slot += 1
 
+                embed.set_footer(text=f"Verfübare Slots: {abs(maxcap - i) + 1}")
+
                 await ctx.respond(embed=embed)
 
     @slash_command(description="Gebe einem Mitspieler eine Waffe")
     async def waffen_geben(self, ctx,
                            member: Option(discord.Member, "Welcher Spieler soll die waffe bekommen"),
                            waffe: Option(str, "Wie heißst die Waffe?")):
-        async with aiosqlite.connect("waffen.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT * FROM waffen WHERE name = ?""", (waffe,)) as cursor:
                 item = await cursor.fetchall()
                 await cursor.close()

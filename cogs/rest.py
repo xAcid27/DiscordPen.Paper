@@ -76,6 +76,8 @@ class Rest(commands.Cog):  # Baseclass quasi Gerüst
                     i += 1
                     slot += 1
 
+                embed.set_footer(text=f"Verfübare Slots: {abs(maxcap-i) + 1}")
+
                 await ctx.respond(embed=embed)
 
     @slash_command(description="Gebe einem Mitspieler etwas von Sonstiges xD")
