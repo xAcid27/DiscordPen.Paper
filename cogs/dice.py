@@ -9,7 +9,7 @@ class Dice(commands.Cog):  # Baseclass quasi Gerüst
         self.bot = bot
 
     @slash_command()
-    async def dice(self, ctx):
+    async def dice(self, ctx,):
         dice4 = ["1", "2", "3", "4"]
         dice6 = ["1", "2", '3', "4", "5", "6"]
         dice8 = ["1", "2", "3", "4", "5", "6", "7", "8"]
@@ -17,9 +17,13 @@ class Dice(commands.Cog):  # Baseclass quasi Gerüst
         dice12 = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
         dice20 = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16",
                   "17", "18", "19", "20"]
-        await ctx.repsond(
-            "Welcher Würfel darf es denn sein?"
+
+        message = await ctx.send(
+            "Welcher Würfel darf es denn sein?",
         )
+
+
+
 
 
 def setup(bot):

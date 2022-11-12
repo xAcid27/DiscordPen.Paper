@@ -12,8 +12,8 @@ intents.messages = True
 activity = discord.Activity(prefix="!" , type=discord.ActivityType.playing, name="Stift und Papier")
 
 bot = discord.Bot(
-    intents=intents ,
-    debug_guilds=[1031612384940396635],
+    intents=intents,
+    debug_guilds=None,
     activity=activity
 )
 

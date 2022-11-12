@@ -22,6 +22,7 @@ class bankSystem(commands.Cog):  # Baseclass quasi Gerüst
                 )"""
             )
 
+
     @slash_command(description="Füge Betrag X zum Konto hinzu")
     async def geben(self,
                    ctx,

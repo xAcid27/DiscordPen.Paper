@@ -4,42 +4,27 @@ from discord.commands import slash_command, Option
 
 import aiosqlite
 
-maxcap = 4
+maxcap = 9
 
-
-class Waffen(commands.Cog):  # Baseclass quasi Gerüst
+class Crafting(commands.Cog):  # Baseclass quasi Gerüst
     def __init__(self, bot):
         self.bot = bot
 
-    #
-    # @commands.Cog.listener()
-    # async def on_ready(self):
-    #     async with aiosqlite.connect("waffen.db") as db:
-    #         await db.execute(
-    #             """
-    #             CREATE TABLE IF NOT EXISTS waffen (
-    #             owner_id INTEGER,
-    #             name TEXT,
-    #             power INTEGER,
-    #             )"""
-    #         )
-
-    @slash_command(description="Füge eine Waffe zum Spielerinventar hinzu")
+    @slash_command(description="Füge sonstiges Item zum Spielerinventar hinzu")
     @commands.has_any_role(1035698515512401920, 1035691541198545026)
-    async def add_waffe(self,
+    async def add_crafting(self,
                         ctx,
-                        member: Option(discord.Member, "Welcher Spieler soll die waffe bekommen"),
-                        name: Option(str, "Wie heißst die Waffe?"),
-                        power: Option(int, "Wie viel Stärke?")):
+                        member: Option(discord.Member, "Welcher Spieler soll das Item bekommen"),
+                        name: Option(str, "Wie heißst das Item?")):
 
-        async with aiosqlite.connect("waffen.db") as db:
-            async with db.execute("""SELECT * FROM waffen WHERE owner_id = ?""", (member.id,)) as cursor:
+        async with aiosqlite.connect("crafting.db") as db:
+            async with db.execute("""SELECT * FROM crafting WHERE owner_id = ?""", (member.id,)) as cursor:
                 bag = await cursor.fetchall()
                 await cursor.close()
                 countinv = len(bag)
 
             if countinv > maxcap:  # Check ob das Inventarcap erreicht ist
-                embed = discord.Embed(title="Waffen-Loot :sparkles:",
+                embed = discord.Embed(title="Sonstiges :sparkles:",
                                       description=f"Der Spieler ***{member.mention}*** kann ***{name}*** leider nicht"
                                                   f" mehr in sein Tasche verstauen :weary:",
                                       color=discord.Color.dark_purple())
@@ -48,47 +33,36 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
                 )
                 return
 
-            if power < 0:  # Check ob Power  unter null
-                embed = discord.Embed(title="Waffen-Loot :sparkles:",
-                                      description=f"***Power*** darf nicht negativ sein"
-                                                  f"oder? :thinking: ",
-                                      color=discord.Color.dark_purple())
-                await ctx.respond(
-                    embed=embed
-                )
-                return
 
             await db.execute(
-                "INSERT INTO waffen (owner_id, name, power) VALUES (?, ?, ?)", (member.id, name, power)
+                "INSERT INTO crafting (owner_id, name) VALUES (?, ?)", (member.id, name)
             )
             await db.commit()
 
-            embed = discord.Embed(title="Waffen-Loot :sparkles:",
-                                  description=f"Spieler {member.mention} hat ***{name}*** mit ***{power}***"
-                                              f" :crossed_swords: erhalten",
+            embed = discord.Embed(title="Sonstiges :sparkles:",
+                                  description=f"Spieler {member.mention} hat ***{name}*** erhalten",
                                   color=discord.Color.dark_purple())
 
             await ctx.respond(
                 embed=embed
             )
 
-    @slash_command(description="Zeige dein Waffen an!")
-    async def waffen_inventar(self, ctx):
-        async with aiosqlite.connect("waffen.db") as db:
-            async with db.execute("""SELECT name, power FROM waffen WHERE owner_id = ?""", (ctx.author.id,)) as cursor:
+    @slash_command(description="Zeige deine sonstigen Items an!")
+    async def craft_inventar(self, ctx):
+        async with aiosqlite.connect("crafting.db") as db:
+            async with db.execute("""SELECT name FROM crafting WHERE owner_id = ?""", (ctx.author.id,)) as cursor:
                 bag = await cursor.fetchall()
                 await cursor.close()
 
-                embed = discord.Embed(title="Deine Waffen :crossed_swords:",
+                embed = discord.Embed(title="Sonstige Items `ICON`",
                                       color=discord.Color.dark_purple())
                 i = 0  # Durchlauf des Arrays - Itemname
-                j = 0  # Durchlauf des Arrays - Itestat
                 slot = 1
                 rows = len(bag)
 
-                if bag == []:
-                    embed.add_field(name="404 Waffe not Found",
-                                    value="Anscheinend hast garkeine Waffen in deiner Tasche :cry:",
+                if not bag:
+                    embed.add_field(name="404 Item not Found",
+                                    value="Anscheinend hast du garkeine Sonstigen Items in deiner Tasche :cry:",
                                     inline=False)
                     await ctx.respond(
                         embed=embed
@@ -97,21 +71,19 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
 
                 for rows in bag:
                     itemname = bag[i]  # Durchlauf des Arrays - Itemname
-                    itemstat = bag[j]  # Durchlauf des Arrays - Itestat
-                    embed.add_field(name=f"Slot {slot}", value=f"Waffe: {itemname[0]} | Schaden + {itemstat[1]}",
+                    embed.add_field(name=f"Slot {slot}", value=f"Item: {itemname[0]} ",
                                     inline=False)
-                    j += 1
                     i += 1
                     slot += 1
 
                 await ctx.respond(embed=embed)
 
-    @slash_command(description="Gebe einem Mitspieler eine Waffe")
-    async def waffen_geben(self, ctx,
-                           member: Option(discord.Member, "Welcher Spieler soll die waffe bekommen"),
-                           waffe: Option(str, "Wie heißst die Waffe?")):
-        async with aiosqlite.connect("waffen.db") as db:
-            async with db.execute("""SELECT * FROM waffen WHERE name = ?""", (waffe,)) as cursor:
+    @slash_command(description="Gebe einem Mitspieler etwas von Sonstiges xD")
+    async def crafting_geben(self, ctx,
+                           member: Option(discord.Member, "Welcher Spieler soll das Item bekommen"),
+                           name: Option(str, "Wie heißst das Item?")):
+        async with aiosqlite.connect("crafting.db") as db:
+            async with db.execute("""SELECT * FROM crafting WHERE name = ?""", (name,)) as cursor:
                 item = await cursor.fetchall()
                 await cursor.close()
                 if not item:  # Check ob Item vorhanden in DB
@@ -123,13 +95,13 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
                     )
                     return
 
-            async with db.execute("""SELECT owner_id FROM waffen WHERE name = ?""", (waffe,)) as cursor:
+            async with db.execute("""SELECT owner_id FROM crafting WHERE name = ?""", (name,)) as cursor:
                 owner_tuple = await cursor.fetchall()
                 await cursor.close()
                 owner = owner_tuple[0]
                 if ctx.author.id != owner[0]:
                     notowner = discord.Embed(title="Übergabeübersicht :scales:",
-                                            description="Du besitzt diese Waffe nicht oder "
+                                            description="Du besitzt dieses Item nicht oder "
                                                         "sie existiert nicht in deinem Inventar",
                                             color=discord.Color.dark_purple())
                     await ctx.respond(
@@ -137,14 +109,14 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
                         )
                     return
 
-            async with db.execute("""SELECT * FROM waffen WHERE owner_id = ?""", (member.id,)) as cursor:
+            async with db.execute("""SELECT * FROM crafting WHERE owner_id = ?""", (member.id,)) as cursor:
                 bag = await cursor.fetchall()
                 await cursor.close()
                 countinv = len(bag)
 
                 if countinv > maxcap:  # Check ob das Inventarcap erreicht ist
                     embed = discord.Embed(title="Übergabeübersicht :scales:",
-                                          description=f"Der Spieler ***{member.mention}*** kann ***{waffe}*** leider nicht"
+                                          description=f"Der Spieler ***{member.mention}*** kann ***{name}*** leider nicht"
                                                       f" mehr in sein Tasche verstauen :weary:",
                                           color=discord.Color.dark_purple())
                     await ctx.respond(
@@ -153,12 +125,12 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
                     return
 
             await db.execute(
-                "UPDATE waffen SET owner_id = ? WHERE name = ?", (member.id, waffe)
+                "UPDATE crafting SET owner_id = ? WHERE name = ?", (member.id, name)
             )
             await db.commit()
 
             succsesful = discord.Embed(title="Übergabeübersicht :scales:",
-                                         description= f"{ctx.author.mention} hat ***{waffe}*** an {member.mention} übergeben.",
+                                         description= f"{ctx.author.mention} hat ***{name}*** an {member.mention} übergeben.",
                                          color=discord.Color.dark_purple())
             await ctx.respond(
                 embed=succsesful
@@ -166,4 +138,4 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
 
 
 def setup(bot):
-    bot.add_cog(Waffen(bot))
+    bot.add_cog(Crafting(bot))
