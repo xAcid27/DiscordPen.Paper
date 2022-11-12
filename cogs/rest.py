@@ -17,7 +17,7 @@ class Rest(commands.Cog):  # Baseclass quasi Gerüst
                         member: Option(discord.Member, "Welcher Spieler soll das Item bekommen"),
                         name: Option(str, "Wie heißst das Item?")):
 
-        async with aiosqlite.connect("rest.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT * FROM rest WHERE owner_id = ?""", (member.id,)) as cursor:
                 bag = await cursor.fetchall()
                 await cursor.close()
@@ -49,7 +49,7 @@ class Rest(commands.Cog):  # Baseclass quasi Gerüst
 
     @slash_command(description="Zeige deine sonstigen Items an!")
     async def rest_inventar(self, ctx):
-        async with aiosqlite.connect("rest.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT name FROM rest WHERE owner_id = ?""", (ctx.author.id,)) as cursor:
                 bag = await cursor.fetchall()
                 await cursor.close()
@@ -82,7 +82,7 @@ class Rest(commands.Cog):  # Baseclass quasi Gerüst
     async def rest_geben(self, ctx,
                            member: Option(discord.Member, "Welcher Spieler soll das Item bekommen"),
                            rest: Option(str, "Wie heißst das Item?")):
-        async with aiosqlite.connect("rest.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT * FROM rest WHERE name = ?""", (rest,)) as cursor:
                 item = await cursor.fetchall()
                 await cursor.close()

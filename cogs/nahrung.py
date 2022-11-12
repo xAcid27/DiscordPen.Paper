@@ -19,7 +19,7 @@ class Nahrung(commands.Cog):  # Baseclass quasi Gerüst
                         hp: Option(int, "Wie viel HP werden hergesellt?"),
                         sp: Option(int, "Wie viel SP verden hergestellt?")):
 
-        async with aiosqlite.connect("nahrung.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT * FROM nahrung WHERE owner_id = ?""", (member.id,)) as cursor:
                 bag = await cursor.fetchall()
                 await cursor.close()
@@ -61,7 +61,7 @@ class Nahrung(commands.Cog):  # Baseclass quasi Gerüst
 
     @slash_command(description="Zeige dein Nahrung an!")
     async def nahrung_inventar(self, ctx):
-        async with aiosqlite.connect("nahrung.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT name, hp, sp FROM nahrung WHERE owner_id = ?""", (ctx.author.id,)) as cursor:
                 bag = await cursor.fetchall()
                 await cursor.close()
@@ -100,7 +100,7 @@ class Nahrung(commands.Cog):  # Baseclass quasi Gerüst
     async def nahrung_geben(self, ctx,
                            member: Option(discord.Member, "Welcher Spieler soll die Nahrung bekommen"),
                            nahrung: Option(str, "Wie heißst die Nahrung?")):
-        async with aiosqlite.connect("nahrung.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT * FROM nahrung WHERE name = ?""", (nahrung,)) as cursor:
                 item = await cursor.fetchall()
                 await cursor.close()

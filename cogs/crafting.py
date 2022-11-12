@@ -15,9 +15,10 @@ class Crafting(commands.Cog):  # Baseclass quasi Gerüst
     async def add_crafting(self,
                         ctx,
                         member: Option(discord.Member, "Welcher Spieler soll das Item bekommen"),
-                        name: Option(str, "Wie heißst das Item?")):
+                        name: Option(str, "Wie heißst das Item?"),
+                        quality: Option(int, "Was für eine Qualität hat das Item")):
 
-        async with aiosqlite.connect("crafting.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT * FROM crafting WHERE owner_id = ?""", (member.id,)) as cursor:
                 bag = await cursor.fetchall()
                 await cursor.close()
@@ -33,9 +34,18 @@ class Crafting(commands.Cog):  # Baseclass quasi Gerüst
                 )
                 return
 
+            if quality < 0:  # Check ob Quality  unter null
+                embed = discord.Embed(title="Waffen-Loot :sparkles:" ,
+                                      description=f"***Quality*** darf nicht negativ sein"
+                                                  f"oder? :thinking: " ,
+                                      color=discord.Color.dark_purple())
+                await ctx.respond(
+                    embed=embed
+                )
+                return
 
             await db.execute(
-                "INSERT INTO crafting (owner_id, name) VALUES (?, ?)", (member.id, name)
+                "INSERT INTO crafting (owner_id, name, quality) VALUES (?, ?, ?)", (member.id, name, quality)
             )
             await db.commit()
 
@@ -49,8 +59,8 @@ class Crafting(commands.Cog):  # Baseclass quasi Gerüst
 
     @slash_command(description="Zeige deine sonstigen Items an!")
     async def craft_inventar(self, ctx):
-        async with aiosqlite.connect("crafting.db") as db:
-            async with db.execute("""SELECT name FROM crafting WHERE owner_id = ?""", (ctx.author.id,)) as cursor:
+        async with aiosqlite.connect("inventory.db") as db:
+            async with db.execute("""SELECT name, quality FROM crafting WHERE owner_id = ?""", (ctx.author.id,)) as cursor:
                 bag = await cursor.fetchall()
                 await cursor.close()
 
@@ -71,7 +81,7 @@ class Crafting(commands.Cog):  # Baseclass quasi Gerüst
 
                 for rows in bag:
                     itemname = bag[i]  # Durchlauf des Arrays - Itemname
-                    embed.add_field(name=f"Slot {slot}", value=f"Item: {itemname[0]} ",
+                    embed.add_field(name=f"Slot {slot}", value=f"Item: {itemname[0]} || Quality: {itemname[1]} ",
                                     inline=False)
                     i += 1
                     slot += 1
@@ -82,7 +92,7 @@ class Crafting(commands.Cog):  # Baseclass quasi Gerüst
     async def crafting_geben(self, ctx,
                            member: Option(discord.Member, "Welcher Spieler soll das Item bekommen"),
                            name: Option(str, "Wie heißst das Item?")):
-        async with aiosqlite.connect("crafting.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT * FROM crafting WHERE name = ?""", (name,)) as cursor:
                 item = await cursor.fetchall()
                 await cursor.close()

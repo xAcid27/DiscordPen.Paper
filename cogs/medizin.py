@@ -18,7 +18,7 @@ class Medizin(commands.Cog):  # Baseclass quasi Gerüst
                         name: Option(str, "Wie heißst die Medizin?"),
                         heal: Option(int, "Wie viel Stärke?")):
 
-        async with aiosqlite.connect("medizin.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT * FROM medizin WHERE owner_id = ?""", (member.id,)) as cursor:
                 bag = await cursor.fetchall()
                 await cursor.close()
@@ -60,7 +60,7 @@ class Medizin(commands.Cog):  # Baseclass quasi Gerüst
 
     @slash_command(description="Zeige dein Medizin an!")
     async def medizin_inventar(self, ctx):
-        async with aiosqlite.connect("medizin.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT name, heal FROM medizin WHERE owner_id = ?""", (ctx.author.id,)) as cursor:
                 bag = await cursor.fetchall()
                 await cursor.close()
@@ -96,7 +96,7 @@ class Medizin(commands.Cog):  # Baseclass quasi Gerüst
     async def medizin_geben(self, ctx,
                            member: Option(discord.Member, "Welcher Spieler soll die medizin bekommen"),
                            medizin: Option(str, "Wie heißst die medizin?")):
-        async with aiosqlite.connect("medizin.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT * FROM medizin WHERE name = ?""", (medizin,)) as cursor:
                 item = await cursor.fetchall()
                 await cursor.close()
