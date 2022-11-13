@@ -6,7 +6,7 @@ import itertools
 import aiosqlite
 
 maxcap = float(100)
-emoji = "<:schatze:1041072838150467615>"
+emoji = "<:schatze:1041119880839172166>"
 
 
 class Schatz(commands.Cog):  # Baseclass quasi Gerüst

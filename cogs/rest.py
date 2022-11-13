@@ -5,6 +5,7 @@ from discord.commands import slash_command, Option
 import aiosqlite
 
 maxcap = 9
+emoji = "<:sonst:1041129534730281081>"
 
 class Rest(commands.Cog):  # Baseclass quasi Gerüst
     def __init__(self, bot):
@@ -54,7 +55,7 @@ class Rest(commands.Cog):  # Baseclass quasi Gerüst
                 bag = await cursor.fetchall()
                 await cursor.close()
 
-                embed = discord.Embed(title="Sonstige Items `ICON`",
+                embed = discord.Embed(title=f"Sonstige Items {emoji}",
                                       color=discord.Color.dark_purple())
                 i = 0  # Durchlauf des Arrays - Itemname
                 slot = 1

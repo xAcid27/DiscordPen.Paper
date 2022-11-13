@@ -5,6 +5,8 @@ from discord.commands import slash_command, Option
 import aiosqlite
 
 maxcap = 4
+spemoji = "<:sp:1041124851647266918>"
+hpemoji ="<:hp:1041131183108522006>"
 
 class Nahrung(commands.Cog):  # Baseclass quasi Gerüst
     def __init__(self, bot):
@@ -52,7 +54,7 @@ class Nahrung(commands.Cog):  # Baseclass quasi Gerüst
 
             embed = discord.Embed(title="Nahrungs-Loot :sparkles:",
                                   description=f"Spieler {member.mention} hat ***{name}***  mit ***{hp} HP***"
-                                              f" :hamburger: und ***{sp} SP*** `(hier sollte ein ICON hin)`  erhalten",
+                                              f"{hpemoji} und ***{sp} SP*** {spemoji} erhalten",
                                   color=discord.Color.dark_purple())
 
             await ctx.respond(
@@ -87,7 +89,7 @@ class Nahrung(commands.Cog):  # Baseclass quasi Gerüst
                     itemname = bag[i]  # Durchlauf des Arrays - Itemname
                     itemstat = bag[j]  # Durchlauf des Arrays - Itestat
                     itemstat2 = bag[k] # Durchlauf des Arrays - Itestat 2
-                    embed.add_field(name=f"Slot {slot}", value=f"Nahrung: {itemname[0]} | HP + {itemstat[1]} | SP + {itemstat2[2]}",
+                    embed.add_field(name=f"Slot {slot}", value=f"Nahrung: {itemname[0]} | HP + {itemstat[1]} {hpemoji} | SP + {itemstat2[2]} {spemoji}",
                                     inline=False)
                     j += 1
                     i += 1
