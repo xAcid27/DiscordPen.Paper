@@ -5,6 +5,7 @@ from discord.commands import slash_command, Option
 import aiosqlite
 
 maxcap = 9
+hpemoji ="<:hp:1041131183108522006>"
 
 class Medizin(commands.Cog):  # Baseclass quasi Gerüst
     def __init__(self, bot):
@@ -49,9 +50,9 @@ class Medizin(commands.Cog):  # Baseclass quasi Gerüst
             )
             await db.commit()
 
-            embed = discord.Embed(title="Medizin-Loot :sparkles:",
+            embed = discord.Embed(title="Medizin-Loot :hospital:",
                                   description=f"Spieler {member.mention} hat ***{name}*** mit ***{heal}***"
-                                              f" :hospital: erhalten",
+                                              f" {hpemoji} erhalten",
                                   color=discord.Color.dark_purple())
 
             await ctx.respond(
@@ -84,7 +85,7 @@ class Medizin(commands.Cog):  # Baseclass quasi Gerüst
                 for rows in bag:
                     itemname = bag[i]  # Durchlauf des Arrays - Itemname
                     itemstat = bag[j]  # Durchlauf des Arrays - Itestat
-                    embed.add_field(name=f"Slot {slot}", value=f"Medizin: {itemname[0]} | HP + {itemstat[1]}",
+                    embed.add_field(name=f"Slot {slot}", value=f"Medizin: {itemname[0]} | HP + {itemstat[1]} {hpemoji}",
                                     inline=False)
                     j += 1
                     i += 1
