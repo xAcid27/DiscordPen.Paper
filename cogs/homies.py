@@ -1,10 +1,11 @@
+import itertools
+
 import discord
 from discord.ext import commands
 from discord.commands import slash_command, Option
 
 import aiosqlite
 
-maxcap = 9
 
 class Homies(commands.Cog):  # Baseclass quasi Gerüst
     def __init__(self, bot):
@@ -18,38 +19,38 @@ class Homies(commands.Cog):  # Baseclass quasi Gerüst
                         name: Option(str, "Wie heißst das Item?"),
                         anzahl: Option(int, "Wie heißt der Homie?", required=False)):
 
-        async with aiosqlite.connect("../inventory.db") as db:
+        async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT * FROM homies WHERE owner_id = ?""", (member.id,)) as cursor:
-                bag = await cursor.fetchall()
+                bagtup = await cursor.fetchall()
                 await cursor.close()
-                countinv = len(bag)
+
+                bag = itertools.chain(*bagtup)
 
             if anzahl is None:
                 anzahl = 1
 
-            # if countinv > maxcap:  # Check ob das Inventarcap erreicht ist
-            #     embed = discord.Embed(title="Sonstiges :sparkles:",
-            #                           description=f"Der Spieler ***{member.mention}*** kann ***{name}*** leider nicht"
-            #                                       f" mehr in sein Tasche verstauen :weary:",
-            #                           color=discord.Color.dark_purple())
-                await ctx.respond(
-                    anzahl, name
+            amount = (sum([item[2] for item in bagtup]) + anzahl)
+
+            if name in list(bag):
+                await db.execute(
+                    "UPDATE homies SET amount = ? WHERE name = ? AND owner_id = ?" , (amount, name, member.id)
                 )
-                return
+            else:
+                await db.execute(
+                 "INSERT INTO homies (owner_id, name, amount) VALUES (?, ?, ?)", (member.id, name, anzahl)
+                )
+
+            await db.commit()
+
+            embed = discord.Embed(title="Sonstiges :sparkles:",
+                                  description=f"Spieler {member.mention} hat ***{name} {anzahl}x*** erhalten",
+                                  color=discord.Color.dark_purple())
+
+            await ctx.respond(
+                embed=embed
+            )
 
 
-            # await db.execute(
-            #     "INSERT INTO rest (owner_id, name) VALUES (?, ?)", (member.id, name)
-            # )
-            # await db.commit()
-            #
-            # embed = discord.Embed(title="Sonstiges :sparkles:",
-            #                       description=f"Spieler {member.mention} hat ***{name}*** erhalten",
-            #                       color=discord.Color.dark_purple())
-            #
-            # await ctx.respond(
-            #     embed=embed
-            # )
 
     # @slash_command(description="Zeige deine sonstigen Items an!")
     # async def rest_inventar(self, ctx):
