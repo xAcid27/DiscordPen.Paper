@@ -1,5 +1,4 @@
-import discord
-import os
+import discord, os
 from dotenv import load_dotenv
 from discord.ext import commands
 from discord.commands import slash_command, Option
