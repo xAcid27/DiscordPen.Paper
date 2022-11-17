@@ -5,6 +5,7 @@ import itertools
 
 from discord import Interaction
 from discord.ext import commands
+from reactionmenu import ViewMenu, ViewButton
 from discord.commands import slash_command , Option
 import aiosqlite
 
@@ -29,26 +30,22 @@ class Inventar(commands.Cog):
     def __init__(self , bot):
         self.bot = bot
 
+    @slash_command()
+    async def example(self, ctx):
+        menu = ViewMenu(ctx , menu_type=ViewMenu.TypeEmbed)
 
-    @slash_command(description="Zeige dein Inventar an!")
-    async def inventar(self , ctx):
-        invoverlay = discord.Embed(title="Dein Inventar :school_satchel:" ,
-                                   description="In welche Tasche möchstest hinein schauen? \n" ,
-                                   color=discord.Color.dark_purple())
+        for member in ctx.guild.members:
+            if member.avatar:
+                embed = discord.Embed(description=f'Joined {member.joined_at.strftime("%b. %d, %Y")}')
+                embed.set_author(name=member.name , icon_url=member.avatar.url)
+                menu.add_page(embed)
 
-        invoverlay.add_field(name="Taschen" , value=f"{inventarover}")
+        menu.add_button(ViewButton.back())
+        menu.add_button(ViewButton.next())
+        menu.add_button(ViewButton.end_session())
 
-        msg = await ctx.respond(
-            embed=invoverlay
-        )
+        await menu.start()
 
-        y = 0
-        for i in emojilist:
-            await ctx.message.add_reaction(emojilist[y])
-            y += 1
-
-        message_id = await ctx.channel.fetch_message(msg)  # Cache Message
-        return
 
         # https: // github.com / Defxult / reactionmenu
 

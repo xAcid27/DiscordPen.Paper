@@ -1,7 +1,8 @@
 import discord, os
 from dotenv import load_dotenv
 from discord.ext import commands
-from discord.commands import slash_command, Option
+from discord import slash_command, Option
+
 
 
 intents = discord.Intents.default()
