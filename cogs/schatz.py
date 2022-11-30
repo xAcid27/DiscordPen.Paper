@@ -50,48 +50,6 @@ class Schatz(commands.Cog):  # Baseclass quasi Gerüst
                 embed=embed
             )
 
-    @slash_command(description="Zeige deine Schätze an!")
-    async def schatz_inventar(self, ctx):
-        async with aiosqlite.connect("inventory.db") as db:
-            async with db.execute("""SELECT name, gewicht FROM schatz WHERE owner_id = ?""",
-                                  (ctx.author.id,)) as cursor:
-                bag = await cursor.fetchall()
-                await cursor.close()
-
-                embed = discord.Embed(title=f"Schatz-Loot {emoji}",
-                                      color=discord.Color.dark_purple())
-                i = 0  # Durchlauf des Arrays - Itemname
-                slot = 1
-                rows = len(bag)
-
-                if not bag:
-                    embed.add_field(name="404 Schatz not Found",
-                                    value="Anscheinend hast du garkeine Schätze in deiner Tasche :cry:",
-                                    inline=False)
-                    await ctx.respond(
-                        embed=embed
-                    )
-                    return
-
-                for rows in bag:
-                    itemname = bag[i]  # Durchlauf des Arrays - Itemname
-                    itemstat = bag[i]  # Durchlauf des Arrays - Itemstat
-                    embed.add_field(name=f"Slot {slot}", value=f"***{itemname[0]}*** mit "
-                                                               f"einem Gewicht von ***{itemstat[1]}*** kg ",
-                                    inline=False)
-                    i += 1
-                    slot += 1
-
-                async with db.execute("""SELECT gewicht FROM schatz WHERE owner_id = ?""",
-                                      (ctx.author.id,)) as cursor:
-                    gewichttup = await cursor.fetchall()
-                    gewicht = itertools.chain(*gewichttup)
-                    await cursor.close()
-
-                embed.set_footer(text=f"Verfübares Gewicht: {abs(maxcap - sum(gewicht))}kg")
-
-                await ctx.respond(embed=embed)
-
     @slash_command(description="Gebe einem Mitspieler etwas von Sonstiges xD")
     async def schatz_geben(self, ctx,
                            member: Option(discord.Member, "Welcher Spieler soll den Schatz bekommen"),

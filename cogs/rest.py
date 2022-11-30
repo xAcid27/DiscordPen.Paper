@@ -48,39 +48,6 @@ class Rest(commands.Cog):  # Baseclass quasi Gerüst
                 embed=embed
             )
 
-    @slash_command(description="Zeige deine sonstigen Items an!")
-    async def rest_inventar(self, ctx):
-        async with aiosqlite.connect("inventory.db") as db:
-            async with db.execute("""SELECT name FROM rest WHERE owner_id = ?""", (ctx.author.id,)) as cursor:
-                bag = await cursor.fetchall()
-                await cursor.close()
-
-                embed = discord.Embed(title=f"Sonstige Items {emoji}",
-                                      color=discord.Color.dark_purple())
-                i = 0  # Durchlauf des Arrays - Itemname
-                slot = 1
-                rows = len(bag)
-
-                if not bag:
-                    embed.add_field(name="404 Item not Found",
-                                    value="Anscheinend hast du garkeine Sonstigen Items in deiner Tasche :cry:",
-                                    inline=False)
-                    await ctx.respond(
-                        embed=embed
-                    )
-                    return
-
-                for rows in bag:
-                    itemname = bag[i]  # Durchlauf des Arrays - Itemname
-                    embed.add_field(name=f"Slot {slot}", value=f"Item: {itemname[0]} ",
-                                    inline=False)
-                    i += 1
-                    slot += 1
-
-                embed.set_footer(text=f"Verfübare Slots: {abs(maxcap-i) + 1}")
-
-                await ctx.respond(embed=embed)
-
     @slash_command(description="Gebe einem Mitspieler etwas von Sonstiges xD")
     async def rest_geben(self, ctx,
                            member: Option(discord.Member, "Welcher Spieler soll das Item bekommen"),

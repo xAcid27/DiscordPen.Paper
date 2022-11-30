@@ -1,20 +1,17 @@
+import asyncio
+
 import discord, os
 from dotenv import load_dotenv
 from discord.ext import commands
 from discord import slash_command, Option
 
-
-
 intents = discord.Intents.default()
 intents.members = True
 intents.messages = True
 
-activity = discord.Activity(prefix="!" , type=discord.ActivityType.playing, name="Stift und Papier")
-
-bot = discord.Bot(
+bot = commands.Bot(
     intents=intents,
     debug_guilds=None,
-    activity=activity
 )
 
 
@@ -33,26 +30,61 @@ async def ping(ctx):
 # userInfo function
 @bot.slash_command(description="DevUserInfo", name="userinfo")
 async def info(ctx, member: Option(discord.Member, "Wähle einen Benutzer", required=False)):
-
     if member is None:
         member = ctx.author
 
-    embed = discord.Embed(title="Dev Userinfo",
-                          description=f"User: {member}",
-                          color=discord.Color.dark_purple())
+    embed = discord.Embed(
+        title="Dev Userinfo",
+        description=f"User: {member}",
+        color=discord.Color.dark_purple())
 
     time = discord.utils.format_dt(member.created_at, "f")
 
     embed.set_thumbnail(
         url=member.display_avatar,
-        )
+    )
 
-    embed.add_field(name="ID", value=member.id,)
-    embed.add_field(name="Rolle", value=member.top_role)
-    embed.add_field(name="Creation", value=time, inline=False)
-    embed.set_footer(text="MMODevInfo")
+    embed.add_field(
+        name="ID",
+        value=member.id,
+    )
+
+    embed.add_field(
+        name="Rolle",
+        value=member.top_role
+    )
+
+    embed.add_field(
+        name="Creation",
+        value=time, inline=False
+    )
+
+    embed.set_footer(
+        text="MMODevInfo"
+    )
 
     await ctx.respond(embed=embed)
+
+
+async def status_task():
+    while True:
+        await bot.change_presence(
+            activity=discord.Game("Neues Inventarsystem für PnP!"),
+            status=discord.Status.online)
+
+        await asyncio.sleep(10)
+
+        await bot.change_presence(
+            activity=discord.Game("In development to become better :)"),
+            status=discord.Status.online)
+
+        await asyncio.sleep(10)
+
+        await bot.change_presence(
+            activity=discord.Game("BotDev for any Help: @xAcid#4244"),
+            status=discord.Status.online)
+
+        await asyncio.sleep(10)
 
 
 if __name__ == "__main__":

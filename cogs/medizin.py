@@ -59,42 +59,6 @@ class Medizin(commands.Cog):  # Baseclass quasi Gerüst
                 embed=embed
             )
 
-    @slash_command(description="Zeige dein Medizin an!")
-    async def medizin_inventar(self, ctx):
-        async with aiosqlite.connect("inventory.db") as db:
-            async with db.execute("""SELECT name, heal FROM medizin WHERE owner_id = ?""", (ctx.author.id,)) as cursor:
-                bag = await cursor.fetchall()
-                await cursor.close()
-
-                embed = discord.Embed(title="Deine Medizin :medical_symbol:",
-                                      color=discord.Color.dark_purple())
-                i = 0  # Durchlauf des Arrays - Itemname
-                j = 0  # Durchlauf des Arrays - Itestat
-                slot = 1
-                rows = len(bag)
-
-                if not bag:
-                    embed.add_field(name="404 Medizin not Found",
-                                    value="Anscheinend hast du garkeine Medizin in deiner Tasche :cry:",
-                                    inline=False)
-                    await ctx.respond(
-                        embed=embed
-                    )
-                    return
-
-                for rows in bag:
-                    itemname = bag[i]  # Durchlauf des Arrays - Itemname
-                    itemstat = bag[j]  # Durchlauf des Arrays - Itestat
-                    embed.add_field(name=f"Slot {slot}", value=f"Medizin: {itemname[0]} | HP + {itemstat[1]} {hpemoji}",
-                                    inline=False)
-                    j += 1
-                    i += 1
-                    slot += 1
-
-                embed.set_footer(text=f"Verfübare Slots: {abs(maxcap - i) + 1}")
-
-                await ctx.respond(embed=embed)
-
     @slash_command(description="Gebe einem Mitspieler eine Medizin")
     async def medizin_geben(self, ctx,
                            member: Option(discord.Member, "Welcher Spieler soll die medizin bekommen"),

@@ -72,41 +72,7 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
                 embed=embed
             )
 
-    @slash_command(description="Zeige dein Waffen an!")
-    async def waffen_inventar(self, ctx):
-        async with aiosqlite.connect("inventory.db") as db:
-            async with db.execute("""SELECT name, power FROM waffen WHERE owner_id = ?""", (ctx.author.id,)) as cursor:
-                bag = await cursor.fetchall()
-                await cursor.close()
 
-                embed = discord.Embed(title="Deine Waffen :crossed_swords:",
-                                      color=discord.Color.dark_purple())
-                i = 0  # Durchlauf des Arrays - Itemname
-                j = 0  # Durchlauf des Arrays - Itestat
-                slot = 1
-                rows = len(bag)
-
-                if bag == []:
-                    embed.add_field(name="404 Waffe not Found",
-                                    value="Anscheinend hast garkeine Waffen in deiner Tasche :cry:",
-                                    inline=False)
-                    await ctx.respond(
-                        embed=embed
-                    )
-                    return
-
-                for rows in bag:
-                    itemname = bag[i]  # Durchlauf des Arrays - Itemname
-                    itemstat = bag[j]  # Durchlauf des Arrays - Itestat
-                    embed.add_field(name=f"Slot {slot}", value=f"Waffe: {itemname[0]} | Schaden + {itemstat[1]}",
-                                    inline=False)
-                    j += 1
-                    i += 1
-                    slot += 1
-
-                embed.set_footer(text=f"Verfübare Slots: {abs(maxcap - i) + 1}")
-
-                await ctx.respond(embed=embed)
 
     @slash_command(description="Gebe einem Mitspieler eine Waffe")
     async def waffen_geben(self, ctx,
