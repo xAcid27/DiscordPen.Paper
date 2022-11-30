@@ -48,10 +48,42 @@ class Rest(commands.Cog):  # Baseclass quasi Gerüst
                 embed=embed
             )
 
+    @slash_command(description="Nehme einem Spieler etwas von seinem Rest")
+    @commands.has_any_role(1035698515512401920, 1035691541198545026)
+    async def lose_rest(self,
+                        ctx,
+                        member: Option(discord.Member, "Welchen Spieler möchtest du etwas nehmen"),
+                        name: Option(str, "Wie heist das Item")
+                        ):
+        async with aiosqlite.connect("inventory.db") as db:
+            async with db.execute("""SELECT * FROM rest WHERE owner_id = ?""", (member.id,)) as cursor:
+                item = await cursor.fetchall()
+                if not item:
+                    failure = discord.Embed(
+                        title="Rest-Loot :sparkles:" ,
+                        description=f"{member.mention} hat leider kein Rest mit dem Namen ***{name}*** im Inventar"
+                    )
+                    await ctx.respond(embed=failure)
+                    return
+
+            async with db.execute("""DELETE FROM rest WHERE owner_id = ? AND name = ?""", (member.id, name)):
+                await db.commit()
+
+                success = discord.Embed(
+                    title="Rest-Loot :sparkles:" ,
+                    description=f"Spieler {member.mention} hat ***{name}*** `ICON` verloren" ,
+                    color=discord.Color.dark_purple()
+                )
+
+                await ctx.respond(embed=success)
+
     @slash_command(description="Gebe einem Mitspieler etwas von Sonstiges xD")
-    async def rest_geben(self, ctx,
-                           member: Option(discord.Member, "Welcher Spieler soll das Item bekommen"),
-                           rest: Option(str, "Wie heißst das Item?")):
+    async def rest_geben(self,
+                         ctx,
+                         member: Option(discord.Member, "Welcher Spieler soll das Item bekommen"),
+                         rest: Option(str, "Wie heißst das Item?")
+                         ):
+
         async with aiosqlite.connect("inventory.db") as db:
             async with db.execute("""SELECT * FROM rest WHERE name = ?""", (rest,)) as cursor:
                 item = await cursor.fetchall()

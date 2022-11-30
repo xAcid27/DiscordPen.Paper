@@ -50,7 +50,7 @@ class Schatz(commands.Cog):  # Baseclass quasi Gerüst
                 embed=embed
             )
 
-    @slash_command(description="Gebe einem Mitspieler etwas von Sonstiges xD")
+    @slash_command(description="Gebe einem Mitspieler etwas von deinem Schatz")
     async def schatz_geben(self, ctx,
                            member: Option(discord.Member, "Welcher Spieler soll den Schatz bekommen"),
                            name: Option(str, "Wie heißst der Schatz?")):

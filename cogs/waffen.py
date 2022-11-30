@@ -72,6 +72,34 @@ class Waffen(commands.Cog):  # Baseclass quasi Gerüst
                 embed=embed
             )
 
+    @slash_command(description="Nimm eine Waffe weg")
+    @commands.has_any_role(1035698515512401920 , 1035691541198545026)
+    async def lose_waffe(self,
+                         ctx,
+                         member: Option (discord.Member, "Welcher Spieler soll die Waffe verlieren?"),
+                         name: Option(str, "Welche Waffe soll genommen werden?")):
+
+        async with aiosqlite.connect("inventory.db") as db:
+            async with db.execute("""SELECT * FROM waffen WHERE owner_id = ? AND name = ?""", (member.id, name)) as cursor:
+                item = await cursor.fetchall()
+                if not item:
+                    failure = discord.Embed(
+                        title="Waffen-Loot :sparkles:" ,
+                        description=f"{member.mention} hat leider keine Waffe mit dem Namen ***{name}*** im Inventar"
+                    )
+                    await ctx.respond(embed=failure)
+                    return
+
+            async with db.execute("""DELETE FROM waffen WHERE owner_id = ? AND name = ?""", (member.id, name)):
+                await db.commit()
+
+            success = discord.Embed(
+                title="Waffen-Loot :sparkles:" ,
+                description=f"Spieler {member.mention} hat ***{name}*** :crossed_swords: verloren" ,
+                color=discord.Color.dark_purple()
+            )
+
+            await ctx.respond(embed=success)
 
 
     @slash_command(description="Gebe einem Mitspieler eine Waffe")
