@@ -27,7 +27,8 @@ class Inventar(commands.Cog):
         await ctx.respond(
             f"Deine Taschen {ctx.author.mention}",
             view=SelectView(),
-            delete_after=60
+            ephemeral=True,
+            delete_after=60,
         )
 
 
