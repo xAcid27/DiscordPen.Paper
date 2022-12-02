@@ -27,7 +27,6 @@ class Inventar(commands.Cog):
         await ctx.respond(
             f"Deine Taschen {ctx.author.mention}",
             view=SelectView(),
-            ephemeral=True,
             delete_after=60,
         )
 
@@ -283,7 +282,7 @@ class SelectView(discord.ui.View):
                     embed.set_footer(text=f"Verfübares Gewicht: {abs(maxcap - sum(gewicht))}kg")
 
                     await interaction.message.edit(
-                        content=f"Die Tasche glitzert aber schön {interaction.user.metion}",
+                        content=f"Die Tasche glitzert aber schön {interaction.user.mention}",
                         embed=embed
                     )
                     await interaction.response.defer()
